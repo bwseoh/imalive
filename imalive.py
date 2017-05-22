@@ -1,50 +1,48 @@
 import netifaces
 import json
+import requests
+import base64
+import os.path
+
 from mailer import EmailSender
+
+# Load the config file
+home_directory_path = os.path.expanduser("~")
+
+with open(os.path.join(home_directory_path, '.imalive_config.json'), 'r') as config_file:
+    config = json.load(config_file)
+
+# We will encode the email id/pw with base64, to make them look obscure (but not really) on config files.
+config['email_id'] = base64.b64decode(config['email_id']).decode('ascii')
+config['email_pw'] = base64.b64decode(config['email_pw']).decode('ascii')
+
+# 'results' will contain the message for the email
+results = ''
+
+# Let's get ip addresses assigned to each of the interfaces installed in this system
+interface_list = netifaces.interfaces()
+
+for interface in interface_list:
+    results += str(interface) + '\n'
+    results += str(netifaces.ifaddresses(interface)) + '\n'
+    results += '\n'
+
+# Let's get the external IP this machine is using on the internet
+public_ip = requests.get('https://api.ipify.org').text
+
+results += str(public_ip) + '\n'
 
 # Create EmailSender instance
 sender = EmailSender(
+            id=config['email_id'],
+            password=config['email_pw'],
+            smtp_address=config['smtp_address'],
+            port_number=config['smtp_port_number'],
+            ssl_needed=config['smtp_ssl_needed'],
+            recipient_addresses=config['email_recipient_addresses'],
+            subject=config['email_subject'],
+            msg_body=results
+        )
 
-# Let's get ip addresses assigned to each of the interfaces installed in this system
-
-# Let's get the external IP this machine is using on the internet
-
-if __name__ == "__main__":
-
-    args_parser = argparse.ArgumentParser(
-                    description='Create one or more MATLAB process(es) to execute multiple cpricer instances.'
-                )
-
-	args_parser.add_argument('email_id', type=str)
-	args_parser.add_argument('email_password', type=str)
-	args_parser.add_argument('smtp_address', type=str)
-        args_parser.add_argument('smtp_port_number', type=str)
-        args_parser.add_argument('smtp_ssl', action='store_true')
-
-	args = args_parser.parse_args()
-
-	global mc_dll_id_range_start
-	mc_dll_id_range_start = args.mc_dll_id_range_start
-
-	global caller_counter
-	caller_counter = 0
-
-	if args.vanilla:
-		start_matlab(
-			args.number_of_processes
-			,vanilla_mode_enabled=True
-		)
-	elif args.custom:
-		if len(args.custom) == 0:
-			print('ERROR: A prefix needs to be specified after the --custom argument.')
-			sys.exit()
-		else:
-			start_matlab(
-				args.number_of_processes
-				,custom_list_mode_enabled=True
-				,custom_prefix=args.custom
-			)
-	else:
-		start_matlab(
-			args.number_of_processes
-		)
+# Send the email
+sender.send()
