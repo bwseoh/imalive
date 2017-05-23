@@ -9,4 +9,4 @@ Works on whatever platform `netifaces` and CPython supports. (*nix / Windows)
 
 # License
 
-imalive is licensed under BSD-new license. Please check `LICENSE`.
+`imalive` is licensed under BSD-new license. Please check `LICENSE`.
