@@ -1,3 +1,3 @@
-[submodule "mailer"]
-	path = mailer
-	url = https://bwseoh@bitbucket.org/bwseoh/mailer.git
+[submodule "bws_mailer"]
+	path = bws_mailer
+	url = https://bwseoh@github.com/bwseoh/bws_mailer.git
