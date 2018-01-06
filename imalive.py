@@ -4,7 +4,7 @@ import requests
 import base64
 import os.path
 
-from bws_mailer import EmailSender
+from rs_mailer import EmailSender
 
 # Load the config file
 home_directory_path = os.path.expanduser("~")
